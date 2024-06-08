@@ -8,7 +8,11 @@ const supabase = require('./database');
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse various different custom JSON types as JSON
-app.use(bodyParser.json({ type: 'application/*+json' }))
+let jsonParser = bodyParser.json();
+if (process.env.APP_ENV === 'dev') {
+ jsonParser = bodyParser.json({ type: 'application/*+json' });
+}
+app.use(jsonParser);
 
 app.get('/', async (req, res) => {
   return res.status(200).json({
@@ -34,10 +38,11 @@ app.post('/api/check/activate', async (req, res) => {
       });
     }
 
-    throw new Error('Activation key is invalid');
+    throw new Error(error);
   } catch (error) {
     return res.status(400).json({
       status: false,
+      error,
     });
   }
 });
